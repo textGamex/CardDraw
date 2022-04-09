@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace CardDrawTest
 {
@@ -14,7 +12,7 @@ namespace CardDrawTest
         public const uint Parameters = 100;
         private readonly List<string> _name = new List<string>();
         private readonly List<uint> _probability = new List<uint>();
-        private static readonly Random _random = new Random();       
+        private static readonly Random _random = new Random(Guid.NewGuid().GetHashCode());       
 
         public void AddPrize(string name, decimal probability)
         {
@@ -34,13 +32,8 @@ namespace CardDrawTest
 
         private static int GetResult(List<uint> array)
         {
-            uint totalNumber = 0;
-            foreach (uint j in array)
-            {
-                //获取总数
-                totalNumber += j;
-            }
-            //Console.WriteLine($"总获奖概率={totalNumber}");
+            uint totalNumber = GetTotalNumber(array);
+            
             double random;
             for (var i = 0; i < array.Count; ++i)
             {
@@ -58,6 +51,52 @@ namespace CardDrawTest
                 }
             }
             return 0;
+        }
+
+        private static uint GetTotalNumber(List<uint> list)
+        {
+            uint totalNumber = 0;
+            list.ForEach((uint i) => totalNumber += i);
+            return totalNumber;
+        }
+
+        public override int GetHashCode()
+        {
+            int result = GetNameHashCode() * 31 + GetProbabilityHashCode();
+            return result;
+        }
+
+        private int GetNameHashCode()
+        {
+            var sb = new StringBuilder();
+            foreach (var s in _name)
+            {
+                sb.Append(s);
+            }
+            return sb.ToString().GetHashCode();
+        }
+
+        private int GetProbabilityHashCode()
+        {
+            int result = 235320395;
+            foreach (var num in _probability)
+            {
+                result = 31 * result + num.GetHashCode();
+            }
+            return result;
+        }
+
+        public override string ToString()
+        {
+            if (_name.Count == 0)
+                return "[]";
+            var sb = new StringBuilder("[");
+            for (int i = 0, max = _name.Count - 1; i < max; ++i)
+            {
+                sb.Append($"{_name[i]}={_probability[i]}, ");
+            }
+            sb.Append($"{_name[_name.Count - 1]}={_probability[_probability.Count - 1]}]");
+            return sb.ToString();
         }
     }
 }
